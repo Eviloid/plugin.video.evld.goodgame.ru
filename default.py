@@ -50,26 +50,26 @@ def list_streams(params):
 	data = json.loads(data)
 
     	for s in data['_embedded']['streams']:
-             channel = s['channel']
-             title = channel['key'] + '. ' + channel['title']
-             preview = 'http:' + channel['thumb'];
+            channel = s['channel']
+            title = channel['key'] + '. ' + channel['title']
+            preview = 'http:' + channel['thumb']
         
-             plot = common.replaceHTMLCodes(channel['description'])
-             plot = plot.replace('<br>', '\n')
-             plot = plot.replace('<br/>', '\n')
-             plot = plot.replace('<b>', '[B]')
-             plot = plot.replace('</b>', '[/B]')
-             plot = common.stripTags(plot)
-             plot = common.replaceHTMLCodes(plot)
+            plot = common.replaceHTMLCodes(channel['description'])
+            plot = plot.replace('<br>', '\n')
+            plot = plot.replace('<br/>', '\n')
+            plot = plot.replace('<b>', '[B]')
+            plot = plot.replace('</b>', '[/B]')
+            plot = common.stripTags(plot)
+            plot = common.replaceHTMLCodes(plot)
 
 
-             postfix = channel['gg_player_src'] # source quality
-             if addon.getSetting('Quality') == '1':
-                 postfix = postfix + '_720'             
-             if addon.getSetting('Quality') == '2':
-                 postfix = postfix + '_480'             
-             
-             add_item(title, url='https://hls.goodgame.ru/hls/' + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
+            postfix = channel['gg_player_src'] # source quality
+            if addon.getSetting('Quality') == '1':
+                postfix = postfix + '_720'             
+            if addon.getSetting('Quality') == '2':
+                postfix = postfix + '_480'             
+
+            add_item(title, url='https://hls.goodgame.ru/hls/' + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
 
         if data['page_count'] > data['page']:
 	    next_page = data['page'] + 1
