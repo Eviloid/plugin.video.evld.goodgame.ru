@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Авторизация">
+        <setting id="User" label="Логин" type="text" default="" visible="true"/>
+        <setting id="Password" label="Пароль" type="text" option="hidden" visible="true" enable="true" default="" />
+    </category>
+    <category label="Просмотр">
+        <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480" visible="true"/>
+    </category>
+    <category label="Разное">
+    </category>
+</settings>
