@@ -42,14 +42,14 @@ def get_html(url, params={}, post={}, noerror=True):
 
 def list_streams(params):
     data = get_html('http://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page']}, noerror=False)
+
     if not isinstance(data, basestring):
-	if params['page'] > 0:
-	    params['page'] = params['page'] - 1
+        if params['page'] > 0:
+            params['page'] = params['page'] - 1
             list_streams(params)
     else:
-	data = json.loads(data)
-
-    	for s in data['_embedded']['streams']:
+        data = json.loads(data)
+        for s in data['_embedded']['streams']:
             channel = s['channel']
             title = channel['key'] + '. ' + channel['title']
             preview = 'http:' + channel['thumb']
@@ -72,7 +72,7 @@ def list_streams(params):
             add_item(title, url='https://hls.goodgame.ru/hls/' + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
 
         if data['page_count'] > data['page']:
-	    next_page = data['page'] + 1
+            next_page = data['page'] + 1
             add_nav(u'Далее > %d из %d' % (next_page, data['page_count']), params={'page':next_page})
 
 
