@@ -80,7 +80,7 @@ def main_menu(params):
 
     list_streams(params)
 
-    xbmcplugin.endOfDirectory(handle)
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
 def add_nav(title, params={}):
