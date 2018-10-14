@@ -8,5 +8,6 @@
         <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480" visible="true"/>
     </category>
     <category label="Разное">
+        <setting id="GetStreamerName" label= "Выводить имя стримера" type="bool" default="true" visible="true"/>
     </category>
 </settings>

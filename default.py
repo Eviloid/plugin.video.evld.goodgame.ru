@@ -64,11 +64,12 @@ def list_streams(params):
 
             player_id = channel['gg_player_src'] # source quality
 
-            player = get_html('https://api2.goodgame.ru/v2/player/' + player_id, noerror=False)
+            if addon.getSetting('GetStreamerName') == 'true':
+                player = get_html('https://api2.goodgame.ru/v2/player/' + player_id, noerror=False)
             
-            if isinstance(player, basestring):
-                player = json.loads(player)
-                title = '%s. %s' % (player['streamer_name'], channel['title'])
+                if isinstance(player, basestring):
+                    player = json.loads(player)
+                    title = '%s. %s' % (player['streamer_name'], channel['title'])
 
             postfix = ''
 
