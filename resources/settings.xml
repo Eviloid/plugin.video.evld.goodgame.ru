@@ -2,12 +2,12 @@
 <settings>
     <category label="Авторизация">
         <setting id="User" label="Логин" type="text" default="" visible="true"/>
-        <setting id="Password" label="Пароль" type="text" option="hidden" visible="true" enable="true" default="" />
+        <setting id="Password" label="Пароль" type="text" option="hidden" visible="true" enable="true" default=""/>
     </category>
     <category label="Просмотр">
         <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480" visible="true"/>
     </category>
     <category label="Разное">
-        <setting id="GetStreamerName" label= "Выводить имя стримера" type="bool" default="true" visible="true"/>
+        <setting id="GetStreamerName" label="Выводить имя стримера" type="bool" default="true" visible="true"/>
     </category>
 </settings>
