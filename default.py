@@ -51,9 +51,9 @@ def list_streams(params):
         data = json.loads(data)
         for s in data['_embedded']['streams']:
             channel = s['channel']
-            title = channel['key'] + '. ' + channel['title']
+            title = '%s. %s' % (channel['key'] + '. ', channel['title'])
             preview = 'http:' + channel['thumb']
-        
+
             plot = common.replaceHTMLCodes(channel['description'])
             plot = plot.replace('<br>', '\n')
             plot = plot.replace('<br/>', '\n')
@@ -62,14 +62,22 @@ def list_streams(params):
             plot = common.stripTags(plot)
             plot = common.replaceHTMLCodes(plot)
 
+            player_id = channel['gg_player_src'] # source quality
 
-            postfix = channel['gg_player_src'] # source quality
+            player = get_html('https://api2.goodgame.ru/v2/player/' + player_id, noerror=False)
+            
+            if isinstance(player, basestring):
+                player = json.loads(player)
+                title = '%s. %s' % (player['streamer_name'], channel['title'])
+
+            postfix = ''
+
             if addon.getSetting('Quality') == '1':
-                postfix = postfix + '_720'             
+                postfix = '_720'             
             if addon.getSetting('Quality') == '2':
-                postfix = postfix + '_480'             
+                postfix = '_480'
 
-            add_item(title, url='https://hls.goodgame.ru/hls/' + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
+            add_item(title, url='https://hls.goodgame.ru/hls/' + player_id + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
 
         if data['page_count'] > data['page']:
             next_page = data['page'] + 1
