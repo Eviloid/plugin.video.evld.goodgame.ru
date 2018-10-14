@@ -41,7 +41,7 @@ def get_html(url, params={}, post={}, noerror=True):
 
 
 def list_streams(params):
-    data = get_html('http://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page']}, noerror=False)
+    data = get_html('https://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page']}, noerror=False)
 
     if not isinstance(data, basestring):
         if params['page'] > 0:
