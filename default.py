@@ -51,7 +51,7 @@ def list_streams(params):
         data = json.loads(data)
         for s in data['_embedded']['streams']:
             channel = s['channel']
-            title = '%s. %s' % (channel['key'] + '. ', channel['title'])
+            title = '%s. %s' % (channel['key'], channel['title'])
             preview = 'http:' + channel['thumb']
 
             plot = common.replaceHTMLCodes(channel['description'])
