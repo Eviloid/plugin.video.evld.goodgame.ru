@@ -62,6 +62,9 @@ def list_streams(params):
             plot = common.stripTags(plot)
             plot = common.replaceHTMLCodes(plot)
 
+            if addon.getSetting('ShowGame') == 'true':
+                plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (channel['games'][0]['title'], plot)
+
             player_id = channel['gg_player_src'] # source quality
 
             if addon.getSetting('GetStreamerName') == 'true':
