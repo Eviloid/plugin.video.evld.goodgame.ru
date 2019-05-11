@@ -5,7 +5,7 @@
         <setting id="Password" label="Пароль" type="text" option="hidden" visible="true" enable="true" default=""/>
     </category>
     <category label="Просмотр">
-        <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480" visible="true"/>
+        <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480|Выбор" visible="true"/>
     </category>
     <category label="Разное">
         <setting id="GetStreamerName" label="Выводить имя стримера" type="bool" default="true" visible="true"/>

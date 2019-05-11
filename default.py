@@ -65,7 +65,7 @@ def list_streams(params):
             if addon.getSetting('ShowGame') == 'true':
                 plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (channel['games'][0]['title'], plot)
 
-            player_id = channel['gg_player_src'] # source quality
+            player_id = channel['gg_player_src']
 
             if addon.getSetting('GetStreamerName') == 'true':
                 player = get_html('https://api2.goodgame.ru/v2/player/' + player_id, noerror=False)
@@ -74,14 +74,7 @@ def list_streams(params):
                     player = json.loads(player)
                     title = '%s. %s' % (player['streamer_name'], channel['title'])
 
-            postfix = ''
-
-            if addon.getSetting('Quality') == '1':
-                postfix = '_720'             
-            if addon.getSetting('Quality') == '2':
-                postfix = '_480'
-
-            add_item(title, url='https://hls.goodgame.ru/hls/' + player_id + postfix + '.m3u8', icon=preview, poster=preview, fanart=fanart, plot=plot, isFolder=False)
+            add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + player_id}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
 
         if data['page_count'] > data['page']:
             next_page = data['page'] + 1
@@ -95,6 +88,23 @@ def main_menu(params):
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
+def play_stream(params):
+    quality = {'1':'_720', '2':'_480', 1:'_720', 2:'_480'}
+
+    q = addon.getSetting('Quality')
+
+    if q == '3':
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select('Качество потока', ['Источник', '720', '480'])
+        postfix = quality.get(ret, '')
+    else:
+        postfix = quality.get(q, '')
+
+    purl = params['url'] + postfix + '.m3u8'
+    item = xbmcgui.ListItem(path=purl)
+    xbmcplugin.setResolvedUrl(handle, True, item)
+
+
 def add_nav(title, params={}):
     url = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
     item = xbmcgui.ListItem(title)
@@ -105,7 +115,7 @@ def add_item(title, params={}, icon='', banner='', fanart='', poster='', thumb='
     if url == None: url = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 
     item = xbmcgui.ListItem(title, iconImage = icon, thumbnailImage = thumb)
-    item.setInfo(type='video', infoLabels={'Title': title, 'Plot': plot})
+    item.setInfo(type='video', infoLabels={'Title': title, 'Plot': plot, 'watched':'False'})
 
     if isPlayable:
         item.setProperty('IsPlayable', 'true')
@@ -130,3 +140,6 @@ page = params.get('page', 1)
 if mode == '':
     tcc().remove_like(LIVE_PREVIEW_TEMPLATE, False)
     main_menu({'page':page})
+
+if mode == 'play':
+    play_stream(params)
