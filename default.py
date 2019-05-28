@@ -96,6 +96,7 @@ def play_stream(params):
     if q == '3':
         dialog = xbmcgui.Dialog()
         ret = dialog.select('Качество потока', ['Источник', '720', '480'])
+        if ret < 0: return
         postfix = quality.get(ret, '')
     else:
         postfix = quality.get(q, '')
