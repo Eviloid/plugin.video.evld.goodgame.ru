@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Авторизация">
-        <setting id="User" label="Логин" type="text" default="" visible="true"/>
-        <setting id="Password" label="Пароль" type="text" option="hidden" visible="true" enable="true" default=""/>
-    </category>
     <category label="Просмотр">
         <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480|Выбор" visible="true"/>
     </category>
     <category label="Разное">
         <setting id="GetStreamerName" label="Выводить имя стримера" type="bool" default="true" visible="true"/>
         <setting id="ShowGame" label="Выводить название игры" type="bool" default="true" visible="true"/>
+        <setting type="sep"/>
+        <setting id="EnableFavorites" label="Избранные стримы" type="bool" default="false" visible="true"/>
+        <setting id="Favorites" label="IDs стримов (через запятую)" type="text" default="" visible="eq(-1,true)"/>
     </category>
 </settings>

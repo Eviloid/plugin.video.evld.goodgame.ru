@@ -41,7 +41,7 @@ def get_html(url, params={}, post={}, noerror=True):
 
 
 def list_streams(params):
-    data = get_html('https://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page']}, noerror=False)
+    data = get_html('https://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page'],'ids':params.get('ids', '')}, noerror=False)
 
     if not isinstance(data, basestring):
         if params['page'] > 0:
@@ -74,14 +74,30 @@ def list_streams(params):
                     player = json.loads(player)
                     title = '%s. %s' % (player['streamer_name'], channel['title'])
 
+            if s['status'] == 'Dead':
+                title = '[COLOR red]%s[/COLOR]' % title
+
             add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + player_id}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
 
         if data['page_count'] > data['page']:
             next_page = data['page'] + 1
-            add_nav(u'Далее > %d из %d' % (next_page, data['page_count']), params={'page':next_page})
+            params['page'] = next_page
+            add_nav(u'Далее > %d из %d' % (next_page, data['page_count']), params)
+
+
+def list_favorites(params):
+    ids = addon.getSetting('Favorites')
+    if ids:
+        params['ids'] = ids
+        list_streams(params)
+
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
 def main_menu(params):
+
+    if addon.getSetting('EnableFavorites') == 'true' and params['page'] == 1:
+        add_nav(u'[B]Избранные стримы[/B]', {'mode':'favorites'})
 
     list_streams(params)
 
@@ -134,13 +150,16 @@ def add_item(title, params={}, icon='', banner='', fanart='', poster='', thumb='
 
 
 params = common.getParameters(sys.argv[2])
+params['mode'] = mode = params.get('mode', 'list')
+params['page'] = params.get('page', 1)
 
-mode = params.get('mode', '')
-page = params.get('page', 1)
-
-if mode == '':
+if mode == 'list':
     tcc().remove_like(LIVE_PREVIEW_TEMPLATE, False)
-    main_menu({'page':page})
+    main_menu(params)
+
+if mode == 'favorites':
+    tcc().remove_like(LIVE_PREVIEW_TEMPLATE, False)
+    list_favorites(params)
 
 if mode == 'play':
     play_stream(params)
