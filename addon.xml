@@ -15,6 +15,6 @@
         <description>Просмотр стримов с GoodGame.ru</description>
         <language>ru</language>
         <source>https://github.com/Eviloid/plugin.video.evld.goodgame.ru</source>
-        <news>[B]0.1.12[/B] - Избранные стримы</news>
+        <news>[B]0.1.13[/B] - Для очистки кэша картинок использую модуль tccleaner</news>
     </extension>
 </addon>
