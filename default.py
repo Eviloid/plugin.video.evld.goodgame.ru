@@ -22,7 +22,7 @@ Pdir = addon.getAddonInfo('path')
 icon = xbmc.translatePath(os.path.join(Pdir, 'icon.png'))
 fanart = xbmc.translatePath(os.path.join(Pdir, 'fanart.jpg'))
 
-xbmcplugin.setContent(handle, 'movies')
+xbmcplugin.setContent(handle, 'videos')
 
 def get_html(url, params={}, post={}, noerror=True):
     headers = {'Accept':'application/json'}
