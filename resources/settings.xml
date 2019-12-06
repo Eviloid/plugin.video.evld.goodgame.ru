@@ -9,8 +9,4 @@
         <setting type="sep"/>
         <setting label="[B]Войти[/B]" type="action" action="RunPlugin(plugin://$ID?mode=login)" option="close"/>
     </category>
-    <category label="Разное">
-        <setting id="GetStreamerName" label="Выводить имя стримера" type="bool" default="true" visible="true"/>
-        <setting id="ShowGame" label="Выводить название игры" type="bool" default="true" visible="true"/>
-    </category>
 </settings>

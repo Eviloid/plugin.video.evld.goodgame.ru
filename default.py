@@ -27,7 +27,7 @@ cj = cookielib.MozillaCookieJar(fcookies)
 
 xbmcplugin.setContent(handle, 'videos')
 
-def get_html(url, params={}, post={}, noerror=True):
+def get_html(url, params={}, post={}, noerror=False):
     headers = {'Accept':'application/json'}
 
     if post:
@@ -60,7 +60,7 @@ def do_login():
 
 
 def checkauth():
-    html = get_html('https://goodgame.ru/api/4/favorites', noerror=False)
+    html = get_html('https://goodgame.ru/api/4/favorites')
     if isinstance(html, basestring):
         data = json.loads(html)
 
@@ -70,17 +70,40 @@ def checkauth():
 
 
 def list_streams(params):
-    data = get_html('https://api2.goodgame.ru/v2/streams', {'only_gg':'1','page':params['page'],'ids':params.get('ids', ''),'game':params.get('game', '')}, noerror=False)
 
-    if not isinstance(data, basestring):
+    ids = ''
+
+    if params['mode'] == 'favorites':
+        html = get_html('https://goodgame.ru/api/4/favorites')
+        data = json.loads(html)
+
+        if isinstance(data, list):
+            for f in data:
+                ids = '%s,%s' % (ids, f['id'])
+                f['streamer'] = f['streamer']['nickname']
+
+        datav4 = {'streams':data}
+
+    else:
+        html = get_html('https://goodgame.ru/api/4/stream', {'ggonly':'1','onpage':25,'page':params['page'],'game':params.get('game', '')}) 
+        if isinstance(html, basestring):
+            datav4 = json.loads(html)
+            for s in datav4['streams']:
+                ids = '%s,%s' % (ids, s['id'])
+
+    if ids == '':
         if params['page'] > 0:
             params['page'] = params['page'] - 1
             list_streams(params)
     else:
-        data = json.loads(data)
+        html = get_html('http://api2.goodgame.ru/v2/streams', {'ids':ids})
+        data = json.loads(html)
         for s in data['_embedded']['streams']:
             channel = s['channel']
-            title = '%s. %s' % (channel['key'], channel['title'])
+            
+            player = next((item for item in datav4['streams'] if item['id'] == s['id']), {'streamer':channel['key']})['streamer']
+
+            title = '%s. %s' % (player, channel['title'])
             preview = 'https:' + channel['thumb']
 
             plot = common.replaceHTMLCodes(channel['description'])
@@ -91,17 +114,9 @@ def list_streams(params):
             plot = common.stripTags(plot)
             plot = common.replaceHTMLCodes(plot)
 
-            if addon.getSetting('ShowGame') == 'true':
-                plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (channel['games'][0]['title'], plot)
+            plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (channel['games'][0]['title'], plot)
 
             player_id = channel['gg_player_src']
-
-            if addon.getSetting('GetStreamerName') == 'true':
-                player = get_html('https://api2.goodgame.ru/v2/player/' + player_id, noerror=False)
-            
-                if isinstance(player, basestring):
-                    player = json.loads(player)
-                    title = '%s. %s' % (player['streamer_name'], channel['title'])
 
             if s['status'] == 'Dead':
                 title = '[COLOR red]%s[/COLOR]' % title
@@ -114,37 +129,46 @@ def list_streams(params):
             
             add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + player_id}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
 
-        if data['page_count'] > data['page']:
-            next_page = data['page'] + 1
-            params['page'] = next_page
-            add_nav(u'Далее > %d из %d' % (next_page, data['page_count']), params)
+
+        qi = datav4.get('queryInfo')
+        if qi:
+            if datav4['queryInfo']['onPage'] > 0:
+                page_count = datav4['queryInfo']['qty'] / datav4['queryInfo']['onPage'] + 1
+
+                if page_count > datav4['queryInfo']['page']:
+                    next_page = datav4['queryInfo']['page'] + 1
+                    params['page'] = next_page
+                    add_nav(u'Далее > %d из %d' % (next_page, page_count), params)
+
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
-def list_favorites(params):
-
-    html = get_html('https://goodgame.ru/api/4/favorites', noerror=False)
-    if isinstance(html, basestring):
+def list_games(params):
+    html = get_html('https://goodgame.ru/api/4/stream/games', {'page':params['page']}, noerror=False)
+    if not isinstance(html, basestring):
+        if params['page'] > 1:
+            params['page'] = params['page'] - 1
+            list_games(params)
+    else:
         data = json.loads(html)
-        ids = ''
+        for g in data['games']:
+            add_item(g['title'], {'mode':'list', 'game':g['url']}, poster=g['poster'], fanart=fanart, isFolder=True)
 
-        if isinstance(data, list):
-            for f in data:
-                ids = '%s,%s' % (ids, f['channelkey'])
-            params['ids'] = ids
-
-            list_streams(params)
+        params['page'] = params['page'] + 1
+        add_nav(u'Далее >', params)
 
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
 def main_menu(params):
 
-    if checkauth() and params['page'] == 1:
-        add_nav(u'[B]Избранные стримы[/B]', {'mode':'favorites'})
+    if params.get('game') == None:
+        if params['page'] == 1:
+            if checkauth():
+                add_nav(u'[B]Избранные стримы[/B]', {'mode':'favorites'})
+            add_nav(u'[B]Игры[/B]', {'mode':'games'})
 
     list_streams(params)
-
-    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
 
 def play_stream(params):
@@ -204,10 +228,13 @@ urllib2.install_opener(opener)
 
 params = common.getParameters(sys.argv[2])
 params['mode'] = mode = params.get('mode', 'list')
-params['page'] = params.get('page', 1)
+params['page'] = int(params.get('page', 1))
 
 if mode == 'login':
     do_login()
+
+elif mode == 'games':
+    list_games(params)
 
 elif mode == 'list':
     tcc().remove_like(LIVE_PREVIEW_TEMPLATE, False)
@@ -215,7 +242,8 @@ elif mode == 'list':
 
 elif mode == 'favorites':
     tcc().remove_like(LIVE_PREVIEW_TEMPLATE, False)
-    list_favorites(params)
+    params['page'] = 0
+    list_streams(params)
 
 elif mode == 'play':
     play_stream(params)
