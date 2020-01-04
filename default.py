@@ -120,7 +120,7 @@ def list_streams(params):
 
             player_id = channel['gg_player_src']
 
-            if s['status'] == 'Dead':
+            if s['status'] == 'Dead' or not s['channel']['player_type'] in ['Premium', 'GoodGame']:
                 title = '[COLOR red]%s[/COLOR]' % title
                 if '.jpg' in channel['img']:
                     preview = channel['img'].replace('.jpg', '_orig.jpg')
