@@ -21,7 +21,9 @@ addon = xbmcaddon.Addon(id='plugin.video.evld.goodgame.ru')
 Pdir = addon.getAddonInfo('path')
 icon = xbmc.translatePath(os.path.join(Pdir, 'icon.png'))
 fanart = xbmc.translatePath(os.path.join(Pdir, 'fanart.jpg'))
+
 fcookies = xbmc.translatePath(os.path.join(Pdir, 'cookies.txt'))
+fcookies = fcookies.decode('utf-8') if sys.platform == 'win32' else fcookies
 cj = cookielib.MozillaCookieJar(fcookies)
 
 
