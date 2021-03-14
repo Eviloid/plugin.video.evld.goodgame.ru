@@ -53,8 +53,8 @@ def get_html(url, params={}, post={}, noerror=False):
 
 def do_login():
     if addon.getSetting('User'):
-        post = {'login':addon.getSetting('User'), 'password':addon.getSetting('Password'), 'remember':1}
-        get_html('https://goodgame.ru/api/4/login', post=post)
+        post = {'username':addon.getSetting('User'), 'password':addon.getSetting('Password')}
+        get_html('https://goodgame.ru/api/4/login/password', post=post)
 
         cj.save(fcookies, True, True)
 
