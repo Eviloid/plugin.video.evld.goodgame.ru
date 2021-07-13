@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import os, urllib, sys, urllib2, re, cookielib, json
@@ -58,7 +57,7 @@ def do_login():
 
         cj.save(fcookies, True, True)
 
-	xbmc.executebuiltin('Container.Refresh')
+    xbmc.executebuiltin('Container.Refresh')
 
 
 def checkauth():
@@ -72,73 +71,49 @@ def checkauth():
 
 
 def list_streams(params):
-
-    ids = ''
-
     if params['mode'] == 'favorites':
         html = get_html('https://goodgame.ru/api/4/favorites')
         data = json.loads(html)
-
-        if isinstance(data, list):
-            for f in data:
-                ids = '%s,%s' % (ids, f['id'])
-                f['streamer'] = f['streamer']['nickname']
-
-        datav4 = {'streams':data}
+        data = {'streams': data}
 
     else:
         html = get_html('https://goodgame.ru/api/4/stream', {'ggonly':'1','onpage':25,'page':params['page'],'game':params.get('game', '')}) 
-        if isinstance(html, basestring):
-            datav4 = json.loads(html)
-            for s in datav4['streams']:
-                ids = '%s,%s' % (ids, s['id'])
-
-    if ids == '':
-        if params['page'] > 0:
-            params['page'] = params['page'] - 1
-            list_streams(params)
-    else:
-        html = get_html('http://api2.goodgame.ru/v2/streams', {'ids':ids})
         data = json.loads(html)
-        for s in data['_embedded']['streams']:
-            channel = s['channel']
-            
-            player = next((item for item in datav4['streams'] if item['id'] == s['id']), {'streamer':channel['key']})['streamer']
 
-            title = '%s. %s' % (player, channel['title'])
-            preview = 'https:' + channel['thumb']
+    if data:
+        for s in data['streams']:
 
-            plot = common.replaceHTMLCodes(channel['description'])
-            plot = plot.replace('<br>', '\n')
-            plot = plot.replace('<br/>', '\n')
-            plot = plot.replace('<b>', '[B]')
-            plot = plot.replace('</b>', '[/B]')
-            plot = common.stripTags(plot)
-            plot = common.replaceHTMLCodes(plot)
+            title = s['title']
 
-            plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (channel['games'][0]['title'], plot)
+            if isinstance(s['streamer'], dict):
+                streamer = s['streamer']['nickname']
+            else:
+                streamer = s['streamer']
 
-            player_id = channel['gg_player_src']
+            title = '[B]%s[/B] %s' % (streamer, title)
 
-            if s['status'] == 'Dead' or not s['channel']['player_type'] in ['Premium', 'GoodGame']:
+            if s.get('gameobj'):
+                plot = '[B][COLOR yellow]%s[/COLOR][/B]\n%s' % (s['gameobj']['title'], title)
+            else:
+                plot = title
+
+            if s['status'] == True:
+                preview = 'https:%s' % s['preview'].replace('_240', '')
+            else:
                 title = '[COLOR red]%s[/COLOR]' % title
-                if '.jpg' in channel['img']:
-                    preview = channel['img'].replace('.jpg', '_orig.jpg')
-                elif '.png' in channel['img']:
-                    preview = channel['img'].replace('.png', '_orig.png')
-                else:
-                    preview = 'https://goodgame.ru/images/stream-offline.png'
-            
-            add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + player_id}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
+                preview = s['poster']
+                if preview[:1] == '/':
+                    preview = 'https://goodgame.ru' + preview
+
+            add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + s['streamkey']}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
 
 
-        qi = datav4.get('queryInfo')
-        if qi:
-            if datav4['queryInfo']['onPage'] > 0:
-                page_count = datav4['queryInfo']['qty'] / datav4['queryInfo']['onPage'] + 1
+        if data.get('queryInfo'):
+            if data['queryInfo']['onPage'] > 0:
+                page_count = data['queryInfo']['qty'] / data['queryInfo']['onPage'] + 1
 
-                if page_count > datav4['queryInfo']['page']:
-                    next_page = datav4['queryInfo']['page'] + 1
+                if page_count > data['queryInfo']['page']:
+                    next_page = data['queryInfo']['page'] + 1
                     params['page'] = next_page
                     add_nav(u'Далее > %d из %d' % (next_page, page_count), params)
 
@@ -163,7 +138,6 @@ def list_games(params):
 
 
 def main_menu(params):
-
     if params.get('game') == None:
         if params['page'] == 1:
             if checkauth():
