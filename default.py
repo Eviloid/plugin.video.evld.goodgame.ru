@@ -105,7 +105,7 @@ def list_streams(params):
                 if preview[:1] == '/':
                     preview = 'https://goodgame.ru' + preview
 
-            add_item(title, {'mode':'play', 'url':'https://hls.goodgame.ru/hls/' + s['streamkey']}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable=True)
+            add_item(title, {'mode':'play', 'key':s['channelkey']}, icon=preview, poster=preview, fanart=fanart, plot=plot, isPlayable= s['status'] == True)
 
 
         if data.get('queryInfo'):
@@ -148,20 +148,41 @@ def main_menu(params):
 
 
 def play_stream(params):
-    quality = {'1':'_720', '2':'_480', 1:'_720', 2:'_480'}
+    quality = {'0':'smil', '1':'source', '2':'720', '3':'480'}
 
     q = addon.getSetting('Quality')
 
-    if q == '3':
-        dialog = xbmcgui.Dialog()
-        ret = dialog.select('Качество потока', ['Источник', '720', '480'])
-        if ret < 0: return
-        postfix = quality.get(ret, '')
-    else:
-        postfix = quality.get(q, '')
+    html = get_html('https://goodgame.ru/api/4/stream/' + params['key']) 
+    data = json.loads(html)
 
-    purl = params['url'] + postfix + '.m3u8'
+    sources = data['sources']
+
+    if len(sources) == 1:
+        purl = sources.itervalues().next()
+    else:
+        if q == '4':
+            lstreams = [s.replace('smil', 'auto') for s in sources]
+            dialog = xbmcgui.Dialog()
+            ret = dialog.select('Качество потока', lstreams)
+            if ret < 0: return
+            q = lstreams[ret].replace('auto', 'smil')
+        else:
+            q = quality.get(q)
+
+        purl = sources.get(q)
+
+    if '.smil' in purl:
+        if data['premium']:
+            purl = purl.replace('.smil', '_master.m3u8').replace('/hls/', '/manifest/')
+        else: 
+            purl = purl.replace('.smil', '.m3u8')
+
     item = xbmcgui.ListItem(path=purl)
+
+    if addon.getSetting('UseStreamAdaptive') == 'true':
+        item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+
     xbmcplugin.setResolvedUrl(handle, True, item)
 
 

@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="Просмотр">
-        <setting id="Quality" label="Качество" type="enum" default="0" values="Источник|720|480|Выбор" visible="true"/>
+        <setting id="Quality" label="Качество" type="enum" default="0" values="Авто|Источник|720|480|Выбор" visible="true"/>
+        <setting id="UseStreamAdaptive" label="Использовать InputStream Adaptive" type="bool" default="false" visible="true"/>
     </category>
     <category label="Авторизация">
         <setting id="User" label="Логин" type="text" default="" visible="true"/>
