@@ -64,9 +64,8 @@ def checkauth():
     html = get_html('https://goodgame.ru/api/4/favorites')
     if isinstance(html, basestring):
         data = json.loads(html)
+        return data.get('error', '') == ''
 
-        if isinstance(data, list):
-            return True
     return False
 
 
