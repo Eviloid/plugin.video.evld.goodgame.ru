@@ -61,7 +61,7 @@ def do_login():
 
 
 def checkauth():
-    html = get_html('https://goodgame.ru/api/4/favorites')
+    html = get_html('https://goodgame.ru/api/4/user')
     if isinstance(html, basestring):
         data = json.loads(html)
         return data.get('error', '') == ''
